@@ -14,6 +14,24 @@
 int main() {
 
     // ******************************************************
+    // MOVE ONLY Right and Left
+    // ******************************************************
+    Waypoint rightStartMoveOnlyPath[] =
+{
+        {0,                     0,     d2r(0)},
+        {0.864,     -0.699-0.3048,     d2r(-45)},
+        {1.817+0.5, -1.245-0.3048,     d2r(0)}
+
+};
+
+    Waypoint leftStartMoveOnlyPath[] =
+{
+        {0,         0,                d2r(0)},
+        {0.864,     0.699-0.3048,     d2r(45)},
+        {1.817+0.5, 1.245-0.3048,     d2r(0)}
+};
+
+    // ******************************************************
     // SWITCH
     // ******************************************************
 
@@ -148,9 +166,10 @@ int main() {
     Waypoint *points = aname; \
     int numPoints = DIM(aname); \
     FILE *file = fopen(#aname ".py","w+"); \
-    const char name[] = #aname
+    const char name[] = #aname;            \
+    const char trajName[] = #aname".txt"
 
-    CREATE_INTERFACE_AND_FILE(rightStartLeftScalePath);
+    CREATE_INTERFACE_AND_FILE(leftStartMoveOnlyPath);
 
     // Write out python code to file
     fprintf(file,"import matplotlib.pyplot as pl\n\n");     // Import packages
@@ -195,7 +214,26 @@ int main() {
     pathfinder_modify_tank(trajectory, length, leftTrajectory, rightTrajectory, wheelbase_width);
 
     // Do something with the trajectories...
-    // Loop through each to produce center, left, and right trajectories
+
+    // Write trajectory out for easy ingestion by Rio, later
+    FILE *trajFile = fopen(trajName,"w+");
+    if (trajFile)
+    {
+        fprintf(trajFile,"%u\n",length);
+        for (int i = 0; i < length; ++i)
+        {
+            // Left
+            fprintf(trajFile,"%f,%f,%f,",leftTrajectory[i].dt,leftTrajectory[i].position,leftTrajectory[i].velocity);
+            // Right
+            fprintf(trajFile,"%f,%f\n",rightTrajectory[i].position,rightTrajectory[i].velocity);
+        }
+    }
+    else
+    {
+        printf("UNABLE TO OPEN %s\n",trajName);
+    }
+
+    // Loop through each to produce center, left, and right trajectorie for plotting
 
     PRINT_XY(c,trajectory,length);
     PRINT_XY(l,leftTrajectory,length);
